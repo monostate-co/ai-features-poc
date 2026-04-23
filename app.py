@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify
+import os
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from PIL import Image
 from io import BytesIO
@@ -7,6 +8,10 @@ from search_images import search_by_image
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route("/")
+def index():
+    return send_file("frontend.html")
 
 @app.route("/search")
 def api_search():
@@ -25,4 +30,4 @@ def api_search_by_image():
     return jsonify(results)
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
