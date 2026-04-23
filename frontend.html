@@ -177,7 +177,7 @@
         try {
           if (currentMode === "text") {
             const q = document.getElementById("q").value;
-            const res = await fetch(`http://localhost:5000/search?q=${encodeURIComponent(q)}`);
+            const res = await fetch(`/search?q=${encodeURIComponent(q)}`);
             data = await res.json();
           } else {
             if (!selectedFile) {
@@ -188,7 +188,7 @@
             }
             const formData = new FormData();
             formData.append("image", selectedFile);
-            const res = await fetch("http://localhost:5000/search-by-image", {
+            const res = await fetch("/search-by-image", {
               method: "POST",
               body: formData,
             });

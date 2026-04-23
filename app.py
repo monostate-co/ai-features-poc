@@ -6,7 +6,7 @@ from io import BytesIO
 from search import search
 from search_images import search_by_image
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=".", static_url_path="")
 CORS(app)
 
 @app.route("/")
