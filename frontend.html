@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vector Search Playground</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .search-mode-toggle {
+        display: flex;
+        gap: 0;
+        border: 1px solid #000;
+        border-radius: var(--borderradius-small);
+        overflow: hidden;
+        height: 40px;
+      }
+      .search-mode-toggle button {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0 14px;
+        height: 100%;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        cursor: pointer;
+        transition: background var(--transition-duration), color var(--transition-duration);
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .search-mode-toggle button.active {
+        background: #000;
+        color: var(--color-base);
+      }
+      .search-mode-toggle button:not(.active):hover {
+        background: var(--color-black5);
+      }
+      .search-area { display: none; align-items: center; gap: 8px; min-height: 40px; }
+      .search-area.active { display: flex; }
+      .upload-dropzone {
+        border: 2px dashed var(--color-black25);
+        border-radius: var(--borderradius-small);
+        padding: 8px 20px;
+        font-size: 13px;
+        color: var(--color-textinput-placeholder);
+        cursor: pointer;
+        transition: border-color var(--transition-duration), background var(--transition-duration);
+        position: relative;
+        min-width: 240px;
+        text-align: center;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .upload-dropzone:hover, .upload-dropzone.dragover {
+        border-color: var(--color-textinput-border-focus);
+        background: var(--color-black5);
+      }
+      .upload-dropzone input[type="file"] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer;
+      }
+      .upload-preview {
+        display: none; align-items: center; gap: 10px;
+      }
+      .upload-preview img {
+        width: 40px; height: 40px; object-fit: cover;
+        border-radius: var(--borderradius-small);
+        border: 1px solid var(--color-line);
+      }
+      .upload-preview .file-name {
+        font-size: 13px; color: var(--color-textinput-placeholder);
+        max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .upload-preview .clear-btn {
+        font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+        padding: 0 10px; height: 40px; border: 1px solid var(--color-black25);
+        border-radius: var(--borderradius-small); background: transparent;
+        cursor: pointer; color: var(--color-textinput-placeholder);
+      }
+      .upload-preview .clear-btn:hover { border-color: #000; color: #000; }
+    </style>
+  </head>
+  <body>
+
+    <div class="proto-banner">Prototype &mdash; Not representative of final product</div>
+
+    <!-- Header + search -->
+    <header>
+      <div class="title-group">
+        <h1>Vector Search</h1>
+        <span class="badge">playground</span>
+      </div>
+      <form class="search-form" onsubmit="doSearch(event)">
+        <div class="search-mode-toggle">
+          <button type="button" class="active" onclick="setMode('text')">Text</button>
+          <button type="button" onclick="setMode('image')">Image</button>
+        </div>
+        <div class="search-area active" id="text-area">
+          <input id="q" type="text" placeholder="playful jewelry..." />
+          <button type="submit">Search</button>
+        </div>
+        <div class="search-area" id="image-area">
+          <div class="upload-dropzone" id="dropzone">
+            Drop an image or click to upload
+            <input type="file" id="image-input" accept="image/*" />
+          </div>
+          <div class="upload-preview" id="upload-preview">
+            <img id="preview-img" src="" alt="preview" />
+            <span class="file-name" id="file-name"></span>
+            <button type="button" class="clear-btn" onclick="clearImage()">Clear</button>
+          </div>
+          <button type="submit" class="submit">Search</button>
+        </div>
+      </form>
+    </header>
+
+    <!-- Results -->
+    <div class="results-container">
+      <div id="spinner" class="spinner" style="display:none;"><div class="spinner-ring"></div></div>
+      <div id="results" class="results-grid"></div>
+      <div id="empty" class="empty-state">Enter a query to explore vector similarity search results</div>
+    </div>
+
+    <script>
+      let currentMode = "text";
+      let selectedFile = null;
+
+      function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll(".search-mode-toggle button").forEach((btn) => {
+          btn.classList.toggle("active", btn.textContent.trim().toLowerCase() === mode);
+        });
+        document.getElementById("text-area").classList.toggle("active", mode === "text");
+        document.getElementById("image-area").classList.toggle("active", mode === "image");
+      }
+
+      // File input handling
+      const imageInput = document.getElementById("image-input");
+      const dropzone = document.getElementById("dropzone");
+
+      imageInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
+      });
+      dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+      dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+      });
+
+      function handleFile(file) {
+        selectedFile = file;
+        document.getElementById("preview-img").src = URL.createObjectURL(file);
+        document.getElementById("file-name").textContent = file.name;
+        document.getElementById("upload-preview").style.display = "flex";
+        dropzone.style.display = "none";
+      }
+
+      function clearImage() {
+        selectedFile = null;
+        imageInput.value = "";
+        document.getElementById("upload-preview").style.display = "none";
+        dropzone.style.display = "flex";
+      }
+
+      async function doSearch(e) {
+        e.preventDefault();
+        const emptyEl = document.getElementById("empty");
+        const spinner = document.getElementById("spinner");
+
+        document.getElementById("results").innerHTML = "";
+        emptyEl.style.display = "none";
+        spinner.style.display = "flex";
+
+        let data;
+        try {
+          if (currentMode === "text") {
+            const q = document.getElementById("q").value;
+            const res = await fetch(`http://localhost:5000/search?q=${encodeURIComponent(q)}`);
+            data = await res.json();
+          } else {
+            if (!selectedFile) {
+              spinner.style.display = "none";
+              emptyEl.textContent = "Please select an image first";
+              emptyEl.style.display = "block";
+              return;
+            }
+            const formData = new FormData();
+            formData.append("image", selectedFile);
+            const res = await fetch("http://localhost:5000/search-by-image", {
+              method: "POST",
+              body: formData,
+            });
+            data = await res.json();
+          }
+        } catch (err) {
+          spinner.style.display = "none";
+          emptyEl.textContent = "Search failed — is the server running?";
+          emptyEl.style.display = "block";
+          return;
+        }
+
+        spinner.style.display = "none";
+        const threshold = currentMode === "text" ? 0.3 : 0.15;
+        const filtered = data.filter((r) => r.score >= threshold);
+
+        if (filtered.length === 0) {
+          document.getElementById("results").innerHTML = "";
+          emptyEl.textContent = "No results found";
+          emptyEl.style.display = "block";
+          return;
+        }
+
+        emptyEl.style.display = "none";
+        document.getElementById("results").innerHTML = filtered
+          .map(
+            (r) => `
+            <div class="product-card">
+              <div class="image-wrapper">
+                ${
+                  r.image
+                    ? `<img src="${r.image}" alt="${r.title}" />`
+                    : `<div class="placeholder"></div>`
+                }
+              </div>
+              <div class="info">
+                <span class="brand">${r.title}</span>
+                <span class="vendor">via ${r.vendor}</span>
+                <span class="score">similarity: ${r.score.toFixed(4)}</span>
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+    </script>
+  </body>
+</html>
