@@ -16,7 +16,7 @@ def index():
 @app.route("/search")
 def api_search():
     q = request.args.get("q", "")
-    results = search(q, top_k=10)
+    results = search(q, top_k=24)
     return jsonify(results)
 
 @app.route("/search-by-image", methods=["POST"])
