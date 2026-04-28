@@ -215,7 +215,10 @@
         emptyEl.style.display = "none";
         document.getElementById("results").innerHTML = filtered
           .map(
-            (r) => `
+            (r) => {
+              const vecWeighted = (r.vector_weight * r.vector_score);
+              const bm25Weighted = (r.bm25_weight * r.bm25_score);
+              return `
             <div class="product-card">
               <div class="image-wrapper">
                 ${
@@ -227,10 +230,27 @@
               <div class="info">
                 <span class="brand">${r.title}</span>
                 <span class="vendor">via ${r.vendor}</span>
-                <span class="score">similarity: ${r.score.toFixed(4)}</span>
+                <div class="score-breakdown">
+                  <div class="score-final">Score: ${r.score.toFixed(4)}</div>
+                  <div class="score-row">
+                    <span class="score-label">vector</span>
+                    <div class="score-bar-track"><div class="score-bar-fill vector" style="width:${(r.vector_score_raw * 100).toFixed(1)}%"></div></div>
+                    <span class="score-value">${r.vector_score_raw.toFixed(3)}</span>
+                  </div>
+                  <div class="score-row">
+                    <span class="score-label">bm25</span>
+                    <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${(r.bm25_score * 100).toFixed(1)}%"></div></div>
+                    <span class="score-value">${r.bm25_score_raw.toFixed(1)}</span>
+                  </div>
+                  <div class="score-calc">
+                    vec ${r.vector_score_raw.toFixed(3)} → norm ${r.vector_score.toFixed(2)} × ${r.vector_weight.toFixed(1)}<br>
+                    bm25 ${r.bm25_score_raw.toFixed(2)} → norm ${r.bm25_score.toFixed(2)} × ${r.bm25_weight.toFixed(1)}<br>
+                    = ${r.score.toFixed(4)}
+                  </div>
+                </div>
               </div>
             </div>
-          `
+          `}
           )
           .join("");
       }

@@ -191,15 +191,76 @@ header .badge {
   line-height: 1.4;
 }
 
-.product-card .info .score {
-  font-size: 11px;
+.product-card .info .score-breakdown {
+  font-size: 10px;
   font-family: "JetBrains Mono", monospace;
   color: var(--color-textinput-placeholder);
-  margin-top: 4px;
+  margin-top: 6px;
   background: var(--color-black5);
-  padding: 2px 6px;
-  border-radius: 3px;
-  width: fit-content;
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.score-breakdown .score-final {
+  font-size: 11px;
+  font-weight: 500;
+  color: #000;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-line);
+  margin-bottom: 2px;
+}
+
+.score-breakdown .score-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.score-breakdown .score-label {
+  width: 52px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.score-breakdown .score-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--color-line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.score-breakdown .score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.score-breakdown .score-bar-fill.vector {
+  background: #0600ff;
+}
+
+.score-breakdown .score-bar-fill.bm25 {
+  background: #000;
+}
+
+.score-breakdown .score-value {
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.score-breakdown .score-calc {
+  font-size: 9px;
+  color: rgba(0, 0, 0, 0.3);
+  padding-top: 3px;
+  border-top: 1px solid var(--color-line);
+  margin-top: 2px;
+  line-height: 1.5;
 }
 
 /* Spinner */
