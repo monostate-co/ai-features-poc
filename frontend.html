@@ -24,8 +24,10 @@
         border-radius: 0;
         background: transparent;
         cursor: pointer;
-        transition: background var(--transition-duration), color var(--transition-duration);
-        font-family: 'JetBrains Mono', monospace;
+        transition:
+          background var(--transition-duration),
+          color var(--transition-duration);
+        font-family: "JetBrains Mono", monospace;
       }
       .search-mode-toggle button.active {
         background: #000;
@@ -34,8 +36,15 @@
       .search-mode-toggle button:not(.active):hover {
         background: var(--color-black5);
       }
-      .search-area { display: none; align-items: center; gap: 8px; min-height: 40px; }
-      .search-area.active { display: flex; }
+      .search-area {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        min-height: 40px;
+      }
+      .search-area.active {
+        display: flex;
+      }
       .upload-dropzone {
         border: 2px dashed var(--color-black25);
         border-radius: var(--borderradius-small);
@@ -43,7 +52,9 @@
         font-size: 13px;
         color: var(--color-textinput-placeholder);
         cursor: pointer;
-        transition: border-color var(--transition-duration), background var(--transition-duration);
+        transition:
+          border-color var(--transition-duration),
+          background var(--transition-duration);
         position: relative;
         min-width: 240px;
         text-align: center;
@@ -52,44 +63,67 @@
         align-items: center;
         justify-content: center;
       }
-      .upload-dropzone:hover, .upload-dropzone.dragover {
+      .upload-dropzone:hover,
+      .upload-dropzone.dragover {
         border-color: var(--color-textinput-border-focus);
         background: var(--color-black5);
       }
       .upload-dropzone input[type="file"] {
-        position: absolute; inset: 0; opacity: 0; cursor: pointer;
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
       }
       .upload-preview {
-        display: none; align-items: center; gap: 10px;
+        display: none;
+        align-items: center;
+        gap: 10px;
       }
       .upload-preview img {
-        width: 40px; height: 40px; object-fit: cover;
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
         border-radius: var(--borderradius-small);
         border: 1px solid var(--color-line);
       }
       .upload-preview .file-name {
-        font-size: 13px; color: var(--color-textinput-placeholder);
-        max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        font-size: 13px;
+        color: var(--color-textinput-placeholder);
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .upload-preview .clear-btn {
-        font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-        padding: 0 10px; height: 40px; border: 1px solid var(--color-black25);
-        border-radius: var(--borderradius-small); background: transparent;
-        cursor: pointer; color: var(--color-textinput-placeholder);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0 10px;
+        height: 40px;
+        border: 1px solid var(--color-black25);
+        border-radius: var(--borderradius-small);
+        background: transparent;
+        cursor: pointer;
+        color: var(--color-textinput-placeholder);
       }
-      .upload-preview .clear-btn:hover { border-color: #000; color: #000; }
+      .upload-preview .clear-btn:hover {
+        border-color: #000;
+        color: #000;
+      }
 
       /* BM25 Modal */
       .bm25-modal-overlay {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.4);
+        background: rgba(0, 0, 0, 0.4);
         z-index: 100;
         justify-content: center;
         align-items: center;
       }
-      .bm25-modal-overlay.open { display: flex; }
+      .bm25-modal-overlay.open {
+        display: flex;
+      }
       .bm25-modal {
         background: var(--color-base);
         border-radius: 8px;
@@ -98,7 +132,7 @@
         max-height: 80vh;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
       }
       .bm25-modal-header {
         display: flex;
@@ -119,13 +153,15 @@
         color: var(--color-textinput-placeholder);
         line-height: 1;
       }
-      .bm25-modal-header button:hover { color: #000; }
+      .bm25-modal-header button:hover {
+        color: #000;
+      }
       .bm25-modal-body {
         padding: 20px;
         overflow-y: auto;
         font-size: 13px;
         line-height: 1.7;
-        color: rgba(0,0,0,0.7);
+        color: rgba(0, 0, 0, 0.7);
         white-space: pre-wrap;
         word-break: break-word;
       }
@@ -144,11 +180,11 @@
         color: var(--color-textinput-placeholder);
       }
       .bm25-modal-footer strong {
-        color: rgba(0,0,0,0.6);
+        color: rgba(0, 0, 0, 0.6);
       }
       .bm25-match-btn {
         font-size: 10px;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: "JetBrains Mono", monospace;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         padding: 4px 8px;
@@ -167,8 +203,9 @@
     </style>
   </head>
   <body>
-
-    <div class="proto-banner">Prototype &mdash; Not representative of final product</div>
+    <div class="proto-banner">
+      Prototype &mdash; Not representative of final product
+    </div>
 
     <!-- Header + search -->
     <header>
@@ -178,7 +215,9 @@
       </div>
       <form class="search-form" onsubmit="doSearch(event)">
         <div class="search-mode-toggle">
-          <button type="button" class="active" onclick="setMode('text')">Text</button>
+          <button type="button" class="active" onclick="setMode('text')">
+            Text
+          </button>
           <button type="button" onclick="setMode('image')">Image</button>
         </div>
         <div class="search-area active" id="text-area">
@@ -193,7 +232,9 @@
           <div class="upload-preview" id="upload-preview">
             <img id="preview-img" src="" alt="preview" />
             <span class="file-name" id="file-name"></span>
-            <button type="button" class="clear-btn" onclick="clearImage()">Clear</button>
+            <button type="button" class="clear-btn" onclick="clearImage()">
+              Clear
+            </button>
           </div>
           <button type="submit" class="submit">Search</button>
         </div>
@@ -201,7 +242,11 @@
     </header>
 
     <!-- BM25 Modal -->
-    <div class="bm25-modal-overlay" id="bm25-modal" onclick="if(event.target===this)closeBm25Modal()">
+    <div
+      class="bm25-modal-overlay"
+      id="bm25-modal"
+      onclick="if (event.target === this) closeBm25Modal();"
+    >
       <div class="bm25-modal">
         <div class="bm25-modal-header">
           <h2 id="bm25-modal-title"></h2>
@@ -209,16 +254,26 @@
         </div>
         <div class="bm25-modal-body" id="bm25-modal-body"></div>
         <div class="bm25-modal-footer">
-          <strong>BM25 score explanation:</strong> Each matching word adds to the score, but matching different words counts more than repeating the same word (repeated matches have diminishing returns). Rarer words count more than common ones. Shorter texts score higher than longer texts with the same matches, since a match in less text is a stronger signal.
+          <strong>BM25 score explanation:</strong> Each matching word adds to
+          the score, but matching different words counts more than repeating the
+          same word (repeated matches have diminishing returns). Rarer words
+          count more than common ones. Shorter texts score higher than longer
+          texts with the same matches, since a match in less text is a stronger
+          signal. <br/><strong>Additional note:</strong> BM25 scores are relative, so the
+          highest scoring product will always have a score of 1.00.
         </div>
       </div>
     </div>
 
     <!-- Results -->
     <div class="results-container">
-      <div id="spinner" class="spinner" style="display:none;"><div class="spinner-ring"></div></div>
+      <div id="spinner" class="spinner" style="display: none">
+        <div class="spinner-ring"></div>
+      </div>
       <div id="results" class="results-grid"></div>
-      <div id="empty" class="empty-state">Enter a query to explore vector similarity search results</div>
+      <div id="empty" class="empty-state">
+        Enter a query to explore vector similarity search results
+      </div>
     </div>
 
     <script>
@@ -229,11 +284,20 @@
 
       function setMode(mode) {
         currentMode = mode;
-        document.querySelectorAll(".search-mode-toggle button").forEach((btn) => {
-          btn.classList.toggle("active", btn.textContent.trim().toLowerCase() === mode);
-        });
-        document.getElementById("text-area").classList.toggle("active", mode === "text");
-        document.getElementById("image-area").classList.toggle("active", mode === "image");
+        document
+          .querySelectorAll(".search-mode-toggle button")
+          .forEach((btn) => {
+            btn.classList.toggle(
+              "active",
+              btn.textContent.trim().toLowerCase() === mode,
+            );
+          });
+        document
+          .getElementById("text-area")
+          .classList.toggle("active", mode === "text");
+        document
+          .getElementById("image-area")
+          .classList.toggle("active", mode === "image");
       }
 
       // File input handling
@@ -243,12 +307,18 @@
       imageInput.addEventListener("change", (e) => {
         if (e.target.files.length > 0) handleFile(e.target.files[0]);
       });
-      dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
-      dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+      });
+      dropzone.addEventListener("dragleave", () =>
+        dropzone.classList.remove("dragover"),
+      );
       dropzone.addEventListener("drop", (e) => {
         e.preventDefault();
         dropzone.classList.remove("dragover");
-        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files.length > 0)
+          handleFile(e.dataTransfer.files[0]);
       });
 
       function handleFile(file) {
@@ -316,13 +386,13 @@
 
         emptyEl.style.display = "none";
         lastResults = filtered;
-        lastQuery = currentMode === "text" ? document.getElementById("q").value : "";
+        lastQuery =
+          currentMode === "text" ? document.getElementById("q").value : "";
         document.getElementById("results").innerHTML = filtered
-          .map(
-            (r, i) => {
-              const vecWeighted = (r.vector_weight * r.vector_score);
-              const bm25Weighted = (r.bm25_weight * r.bm25_score);
-              return `
+          .map((r, i) => {
+            const vecWeighted = r.vector_weight * r.vector_score;
+            const bm25Weighted = r.bm25_weight * r.bm25_score;
+            return `
             <div class="product-card">
               <div class="image-wrapper">
                 ${
@@ -334,33 +404,40 @@
               <div class="info">
                 <span class="brand">${r.title}</span>
                 <span class="vendor">via ${r.vendor}</span>
+                ${
+                  currentMode === "text"
+                    ? (() => {
+                        const vecContrib = r.vector_weight * r.vector_score;
+                        const bm25Contrib = r.bm25_weight * r.bm25_score;
+                        return `
                 <div class="score-breakdown">
                   <div class="score-final">Score: ${r.score.toFixed(4)}</div>
-                  ${r.vector_score_raw != null ? `
                   <div class="score-row">
-                    <span class="score-label">vector</span>
+                    <span class="score-label">vec</span>
                     <div class="score-bar-track"><div class="score-bar-fill vector" style="width:${(r.vector_score_raw * 100).toFixed(1)}%"></div></div>
                     <span class="score-value">${r.vector_score_raw.toFixed(3)}</span>
                   </div>
-                  ` : ''}
-                  ${currentMode === "text" ? `
                   <div class="score-row">
                     <span class="score-label">bm25</span>
-                    <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${(r.bm25_score * 100).toFixed(1)}%"></div></div>
+                    <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${(r.bm25_score_raw / (filtered[0].bm25_score_raw || 1) * 100).toFixed(1)}%"></div></div>
                     <span class="score-value">${r.bm25_score_raw.toFixed(1)}</span>
                   </div>
                   <div class="score-calc">
-                    vec ${r.vector_score_raw.toFixed(3)} → norm ${r.vector_score.toFixed(2)} × ${r.vector_weight.toFixed(1)}<br>
-                    bm25 ${r.bm25_score_raw.toFixed(2)} → norm ${r.bm25_score.toFixed(2)} × ${r.bm25_weight.toFixed(1)}<br>
-                    = ${r.score.toFixed(4)}
+                    vec norm(${r.vector_score_raw.toFixed(3)}) = ${r.vector_score.toFixed(2)} × ${r.vector_weight.toFixed(1)} = ${vecContrib.toFixed(4)}<br>
+                    bm25 norm(${r.bm25_score_raw.toFixed(1)}) = ${r.bm25_score.toFixed(2)} × ${r.bm25_weight.toFixed(1)} = ${bm25Contrib.toFixed(4)}<br>
                   </div>
-                  <button class="bm25-match-btn" data-idx="${i}" onclick="openBm25Modal(this.dataset.idx)">View BM25 text</button>
-                  ` : ''}
-                </div>
+                  <button class="bm25-match-btn" data-idx="${i}" onclick="openBm25Modal(this.dataset.idx)">View keyword matches</button>
+                </div>`;
+                      })()
+                    : `
+                <div class="score-breakdown" style="border:none">
+                  <div class="score-final" style="border:none;margin:0;padding-bottom:0">Score: ${r.score.toFixed(4)}</div>
+                </div>`
+                }
               </div>
             </div>
-          `}
-          )
+          `;
+          })
           .join("");
       }
 
@@ -374,9 +451,23 @@
         if (tokens.length === 0) {
           html = escapeHtml(text);
         } else {
-          const pattern = new RegExp(`\\b(${tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'gi');
-          html = text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
-                     .replace(pattern, '<mark>$1</mark>');
+          const pattern = new RegExp(
+            `\\b(${tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
+            "gi",
+          );
+          html = text
+            .replace(
+              /[&<>"']/g,
+              (c) =>
+                ({
+                  "&": "&amp;",
+                  "<": "&lt;",
+                  ">": "&gt;",
+                  '"': "&quot;",
+                  "'": "&#39;",
+                })[c],
+            )
+            .replace(pattern, "<mark>$1</mark>");
         }
         document.getElementById("bm25-modal-body").innerHTML = html;
         document.getElementById("bm25-modal").classList.add("open");
@@ -387,7 +478,17 @@
       }
 
       function escapeHtml(str) {
-        return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        return str.replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
       }
 
       document.addEventListener("keydown", (e) => {
