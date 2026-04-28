@@ -200,6 +200,32 @@
         border-color: #0600ff;
         color: #0600ff;
       }
+      #commit-card {
+        display: none;
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        background: var(--color-base);
+        border: 1px solid var(--color-line);
+        border-radius: var(--borderradius-small);
+        padding: 8px 12px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        color: rgba(0, 0, 0, 0.6);
+        max-width: fit-content;
+        width: calc(100% - 32px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        z-index: 50;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      #commit-card strong {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-right: 6px;
+        color: rgba(0, 0, 0, 0.35);
+      }
     </style>
   </head>
   <body>
@@ -259,8 +285,9 @@
           same word (repeated matches have diminishing returns). Rarer words
           count more than common ones. Shorter texts score higher than longer
           texts with the same matches, since a match in less text is a stronger
-          signal. <br/><strong>Additional note:</strong> BM25 scores are relative, so the
-          highest scoring product will always have a score of 1.00.
+          signal. <br /><strong>Additional note:</strong> BM25 scores are
+          relative, so the highest scoring product will always have a score of
+          1.00.
         </div>
       </div>
     </div>
@@ -275,6 +302,8 @@
         Enter a query to explore vector similarity search results
       </div>
     </div>
+
+    <div id="commit-card"></div>
 
     <script>
       let currentMode = "text";
@@ -419,7 +448,7 @@
                   </div>
                   <div class="score-row">
                     <span class="score-label">bm25</span>
-                    <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${(r.bm25_score_raw / (filtered[0].bm25_score_raw || 1) * 100).toFixed(1)}%"></div></div>
+                    <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${((r.bm25_score_raw / (filtered[0].bm25_score_raw || 1)) * 100).toFixed(1)}%"></div></div>
                     <span class="score-value">${r.bm25_score_raw.toFixed(1)}</span>
                   </div>
                   <div class="score-calc">
@@ -494,6 +523,34 @@
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") closeBm25Modal();
       });
+
+      // Fetch latest commit from GitHub
+      (async function fetchLatestCommit() {
+        try {
+          const res = await fetch(
+            "https://api.github.com/repos/monostate-co/ai-features-poc/commits?sha=main&per_page=1",
+          );
+          if (!res.ok) return;
+          const [commit] = await res.json();
+          const msg = commit.commit.message.split("\n")[0];
+          const date = new Date(commit.commit.author.date);
+          const ago = timeAgo(date);
+          document.getElementById("commit-card").innerHTML =
+            `<strong>latest commit</strong> ${escapeHtml(msg)}`;
+          document.getElementById("commit-card").style.display = "block";
+        } catch {}
+      })();
+
+      function timeAgo(date) {
+        const s = Math.floor((Date.now() - date) / 1000);
+        if (s < 60) return "just now";
+        const m = Math.floor(s / 60);
+        if (m < 60) return m + "m ago";
+        const h = Math.floor(m / 60);
+        if (h < 24) return h + "h ago";
+        const d = Math.floor(h / 24);
+        return d + "d ago";
+      }
     </script>
   </body>
 </html>
