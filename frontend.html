@@ -78,6 +78,92 @@
         cursor: pointer; color: var(--color-textinput-placeholder);
       }
       .upload-preview .clear-btn:hover { border-color: #000; color: #000; }
+
+      /* BM25 Modal */
+      .bm25-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 100;
+        justify-content: center;
+        align-items: center;
+      }
+      .bm25-modal-overlay.open { display: flex; }
+      .bm25-modal {
+        background: var(--color-base);
+        border-radius: 8px;
+        max-width: 640px;
+        width: 90%;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      }
+      .bm25-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--color-line);
+      }
+      .bm25-modal-header h2 {
+        font-size: 15px;
+        font-weight: 500;
+      }
+      .bm25-modal-header button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--color-textinput-placeholder);
+        line-height: 1;
+      }
+      .bm25-modal-header button:hover { color: #000; }
+      .bm25-modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        font-size: 13px;
+        line-height: 1.7;
+        color: rgba(0,0,0,0.7);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .bm25-modal-body mark {
+        background: rgba(6, 0, 255, 0.15);
+        color: #0600ff;
+        border-radius: 2px;
+        padding: 1px 2px;
+        font-weight: 500;
+      }
+      .bm25-modal-footer {
+        padding: 14px 20px;
+        border-top: 1px solid var(--color-line);
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--color-textinput-placeholder);
+      }
+      .bm25-modal-footer strong {
+        color: rgba(0,0,0,0.6);
+      }
+      .bm25-match-btn {
+        font-size: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 4px 8px;
+        border: 1px solid var(--color-black25);
+        border-radius: var(--borderradius-small);
+        background: transparent;
+        cursor: pointer;
+        color: var(--color-textinput-placeholder);
+        margin-top: 4px;
+        align-self: flex-start;
+      }
+      .bm25-match-btn:hover {
+        border-color: #0600ff;
+        color: #0600ff;
+      }
     </style>
   </head>
   <body>
@@ -114,6 +200,20 @@
       </form>
     </header>
 
+    <!-- BM25 Modal -->
+    <div class="bm25-modal-overlay" id="bm25-modal" onclick="if(event.target===this)closeBm25Modal()">
+      <div class="bm25-modal">
+        <div class="bm25-modal-header">
+          <h2 id="bm25-modal-title"></h2>
+          <button onclick="closeBm25Modal()">&times;</button>
+        </div>
+        <div class="bm25-modal-body" id="bm25-modal-body"></div>
+        <div class="bm25-modal-footer">
+          <strong>BM25 score explanation:</strong> Each matching word adds to the score, but matching different words counts more than repeating the same word (repeated matches have diminishing returns). Rarer words count more than common ones. Shorter texts score higher than longer texts with the same matches, since a match in less text is a stronger signal.
+        </div>
+      </div>
+    </div>
+
     <!-- Results -->
     <div class="results-container">
       <div id="spinner" class="spinner" style="display:none;"><div class="spinner-ring"></div></div>
@@ -124,6 +224,8 @@
     <script>
       let currentMode = "text";
       let selectedFile = null;
+      let lastResults = [];
+      let lastQuery = "";
 
       function setMode(mode) {
         currentMode = mode;
@@ -213,9 +315,11 @@
         }
 
         emptyEl.style.display = "none";
+        lastResults = filtered;
+        lastQuery = currentMode === "text" ? document.getElementById("q").value : "";
         document.getElementById("results").innerHTML = filtered
           .map(
-            (r) => {
+            (r, i) => {
               const vecWeighted = (r.vector_weight * r.vector_score);
               const bm25Weighted = (r.bm25_weight * r.bm25_score);
               return `
@@ -232,11 +336,14 @@
                 <span class="vendor">via ${r.vendor}</span>
                 <div class="score-breakdown">
                   <div class="score-final">Score: ${r.score.toFixed(4)}</div>
+                  ${r.vector_score_raw != null ? `
                   <div class="score-row">
                     <span class="score-label">vector</span>
                     <div class="score-bar-track"><div class="score-bar-fill vector" style="width:${(r.vector_score_raw * 100).toFixed(1)}%"></div></div>
                     <span class="score-value">${r.vector_score_raw.toFixed(3)}</span>
                   </div>
+                  ` : ''}
+                  ${currentMode === "text" ? `
                   <div class="score-row">
                     <span class="score-label">bm25</span>
                     <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${(r.bm25_score * 100).toFixed(1)}%"></div></div>
@@ -247,6 +354,8 @@
                     bm25 ${r.bm25_score_raw.toFixed(2)} → norm ${r.bm25_score.toFixed(2)} × ${r.bm25_weight.toFixed(1)}<br>
                     = ${r.score.toFixed(4)}
                   </div>
+                  <button class="bm25-match-btn" data-idx="${i}" onclick="openBm25Modal(this.dataset.idx)">View BM25 text</button>
+                  ` : ''}
                 </div>
               </div>
             </div>
@@ -254,6 +363,36 @@
           )
           .join("");
       }
+
+      function openBm25Modal(idx) {
+        const r = lastResults[idx];
+        if (!r) return;
+        document.getElementById("bm25-modal-title").textContent = r.title;
+        const text = r.description || "";
+        const tokens = lastQuery.toLowerCase().match(/\w+/g) || [];
+        let html;
+        if (tokens.length === 0) {
+          html = escapeHtml(text);
+        } else {
+          const pattern = new RegExp(`\\b(${tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'gi');
+          html = text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+                     .replace(pattern, '<mark>$1</mark>');
+        }
+        document.getElementById("bm25-modal-body").innerHTML = html;
+        document.getElementById("bm25-modal").classList.add("open");
+      }
+
+      function closeBm25Modal() {
+        document.getElementById("bm25-modal").classList.remove("open");
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeBm25Modal();
+      });
     </script>
   </body>
 </html>
