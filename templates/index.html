@@ -439,12 +439,11 @@
           list.innerHTML = all
             .map((c) => {
               const m = c.commit.message.split("\n")[0];
-              const date = new Date(c.commit.author.date).getTime();
               const sha = c.sha.substring(0, 7);
-              return `<a class="commit-item" href="${c.html_url}" target="_blank" rel="noopener">
+              return `<div class="commit-item">
                 <span class="msg">${escapeHtml(m)}</span>
-                <span class="meta">${sha} · ${timeAgo(date)}</span>
-              </a>`;
+                <span class="meta">${sha}</span>
+              </div>`;
             })
             .join("");
         } catch {
@@ -452,16 +451,6 @@
         }
       }
 
-      function timeAgo(date) {
-        const s = Math.floor((Date.now() - date) / 1000);
-        if (s < 60) return "just now";
-        const m = Math.floor(s / 60);
-        if (m < 60) return m + "m ago";
-        const h = Math.floor(m / 60);
-        if (h < 24) return h + "h ago";
-        const d = Math.floor(h / 24);
-        return d + "d ago";
-      }
     </script>
   </body>
 </html>
