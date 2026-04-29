@@ -73,7 +73,7 @@ def download_image(url, save_path):
         return False
 
 def main():
-    products = load_products("products_optimized.csv")
+    products = load_products("data/products_optimized.csv")
     print(f"Loaded {len(products)} unique products.")
 
     os.makedirs(IMAGES_DIR, exist_ok=True)
@@ -112,8 +112,8 @@ def main():
     embeddings = np.vstack(all_embeddings)
     print(f"Embeddings shape: {embeddings.shape}")
 
-    np.save("embeddings_images.npy", embeddings)
-    with open("products_images.json", "w", encoding="utf-8") as f:
+    np.save("data/embeddings_images.npy", embeddings)
+    with open("data/products_images.json", "w", encoding="utf-8") as f:
         json.dump(valid_products, f, ensure_ascii=False, indent=2)
 
     print(f"Indexed {len(valid_products)} products. Saved embeddings_images.npy and products_images.json.")

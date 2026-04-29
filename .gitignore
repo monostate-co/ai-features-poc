@@ -1,1 +1,11 @@
-/product_images
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# macOS
+.DS_Store
+
+# Data (large files)
+/product_images/

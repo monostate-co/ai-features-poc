@@ -61,7 +61,7 @@ def load_products(csv_path):
     return list(seen.values())
 
 # 1. Load products
-products = load_products("products_optimized.csv")
+products = load_products("data/products_optimized.csv")
 print(f"Loaded {len(products)} unique products.")
 
 # 2. Encode with OpenAI
@@ -81,8 +81,8 @@ texts = [p["image_alt"] for p in products]
 embeddings = get_embeddings(texts)
 
 # 4. Save
-np.save("embeddings.npy", embeddings)
-with open("products.json", "w", encoding="utf-8") as f:
+np.save("data/embeddings.npy", embeddings)
+with open("data/products.json", "w", encoding="utf-8") as f:
     json.dump(products, f, ensure_ascii=False, indent=2)
 
 print(f"Indexed {len(products)} products. Saved embeddings.npy and products.json.")

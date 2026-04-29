@@ -8,9 +8,9 @@ from openai import OpenAI
 client = OpenAI()
 EMBEDDING_MODEL = "text-embedding-3-small"
 
-embeddings = np.load("embeddings.npy")
+embeddings = np.load("data/embeddings.npy")
 
-with open("products.json", encoding="utf-8") as f:
+with open("data/products.json", encoding="utf-8") as f:
     products = json.load(f)
 
 # Build BM25 index from product text

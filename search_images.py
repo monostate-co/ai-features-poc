@@ -8,9 +8,9 @@ from sentence_transformers import SentenceTransformer
 
 model = SentenceTransformer("clip-ViT-B-32")
 
-embeddings = np.load("embeddings_images.npy")
+embeddings = np.load("data/embeddings_images.npy")
 
-with open("products_images.json", encoding="utf-8") as f:
+with open("data/products_images.json", encoding="utf-8") as f:
     products = json.load(f)
 
 def search_by_image(image, top_k=10):

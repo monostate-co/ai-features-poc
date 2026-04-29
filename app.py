@@ -6,12 +6,12 @@ from io import BytesIO
 from search import search
 from search_images import search_by_image
 
-app = Flask(__name__, static_folder=".", static_url_path="")
+app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
 @app.route("/")
 def index():
-    return send_file("frontend.html")
+    return send_file("templates/index.html")
 
 @app.route("/search")
 def api_search():
