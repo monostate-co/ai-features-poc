@@ -7,5 +7,8 @@ venv/
 # macOS
 .DS_Store
 
+# Models (large files)
+/models/
+
 # Data (large files)
 /product_images/

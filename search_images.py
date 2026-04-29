@@ -1,12 +1,21 @@
 # search_images.py
 # Image-to-image search using CLIP embeddings.
 
+import os
 import json
 import numpy as np
 from PIL import Image
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("clip-ViT-B-32")
+MODEL_NAME = "clip-ViT-B-32"
+MODEL_PATH = os.path.join("models", MODEL_NAME)
+
+if os.path.exists(MODEL_PATH):
+    model = SentenceTransformer(MODEL_PATH)
+else:
+    model = SentenceTransformer(MODEL_NAME)
+    os.makedirs("models", exist_ok=True)
+    model.save(MODEL_PATH)
 
 embeddings = np.load("data/embeddings_images.npy")
 
