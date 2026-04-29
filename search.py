@@ -13,22 +13,40 @@ embeddings = np.load("data/embeddings.npy")
 with open("data/products.json", encoding="utf-8") as f:
     products = json.load(f)
 
+
 # Build BM25 index from product text
 def tokenize(text):
     return re.findall(r"\w+", text.lower())
 
-bm25_corpus = [tokenize(p.get("text", "")) for p in products]
+
+def bm25_text(p):
+    return " ".join(
+        [
+            p.get("image_alt", ""),
+            p.get("vendor", ""),
+            p.get("type", ""),
+            p.get("color", ""),
+            # TODO: Remove this in favor of better image alt
+            p.get("text", ""),
+        ]
+    )
+
+
+print("regenerateing BM25 index...")
+bm25_corpus = [tokenize(bm25_text(p)) for p in products]
 bm25_index = BM25Okapi(bm25_corpus)
+
 
 def embed_query(text):
     response = client.embeddings.create(input=[text], model=EMBEDDING_MODEL)
     return np.array(response.data[0].embedding)
 
+
 def search(query, top_k=5, bm25_weight=0.3):
     # Vector (semantic) scores
     query_vec = embed_query(query).reshape(1, -1)
     vec_scores = np.dot(embeddings, query_vec.T).squeeze()
-    vec_scores /= (np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_vec))
+    vec_scores /= np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_vec)
 
     # BM25 (keyword) scores
     query_tokens = tokenize(query)
@@ -53,21 +71,25 @@ def search(query, top_k=5, bm25_weight=0.3):
 
     results = []
     for i in top_indices:
-        results.append({
-    	    "title": products[i]["title"],
-    	    "vendor": products[i]["vendor"],
-    	    "score": float(combined[i]),
-            "vector_score": float(vec_norm[i]),
-            "vector_score_raw": float(vec_scores[i]),
-            "bm25_score": float(bm25_norm[i]),
-            "bm25_score_raw": float(bm25_scores[i]),
-            "vector_weight": float(1 - bm25_weight),
-            "bm25_weight": float(bm25_weight),
-            "handle": products[i]["handle"],
-            "image": products[i].get("image", ""),
-            "description": products[i].get("text", ""),
-        })
+        results.append(
+            {
+                "title": products[i]["title"],
+                "vendor": products[i]["vendor"],
+                "score": float(combined[i]),
+                "vector_score": float(vec_norm[i]),
+                "vector_score_raw": float(vec_scores[i]),
+                "bm25_score": float(bm25_norm[i]),
+                "bm25_score_raw": float(bm25_scores[i]),
+                "vector_weight": float(1 - bm25_weight),
+                "bm25_weight": float(bm25_weight),
+                "handle": products[i]["handle"],
+                "image": products[i].get("image", ""),
+                "description": products[i].get("text", ""),
+                "bm25_text": bm25_text(products[i]),
+            }
+        )
     return results
+
 
 if __name__ == "__main__":
     while True:

@@ -73,11 +73,25 @@
     <!-- Results -->
     <div class="results-container">
       <div class="weight-bar" id="weight-bar" style="display: none">
-        <label>vec <span class="weight-value" id="vec-weight-label">70</span></label>
-        <input type="range" id="bm25-weight-slider" min="0" max="100" value="30"
-          oninput="reweightResults(this.value)" />
-        <label>bm25 <span class="weight-value" id="bm25-weight-label">30</span></label>
-        <span class="weight-hint">Adjust the blend between semantic similarity and keyword matching</span>
+        <label
+          >vec <span class="weight-value" id="vec-weight-label">70</span></label
+        >
+        <input
+          type="range"
+          id="bm25-weight-slider"
+          min="0"
+          max="100"
+          value="30"
+          oninput="reweightResults(this.value)"
+        />
+        <label
+          >bm25
+          <span class="weight-value" id="bm25-weight-label">30</span></label
+        >
+        <span class="weight-hint"
+          >Adjust the blend between semantic similarity and keyword
+          matching</span
+        >
       </div>
       <div id="spinner" class="spinner" style="display: none">
         <div class="spinner-ring"></div>
@@ -193,7 +207,9 @@
         if (currentMode === "text") {
           lastRawResults = data;
           lastQuery = document.getElementById("q").value;
-          const bm25Pct = parseInt(document.getElementById("bm25-weight-slider").value);
+          const bm25Pct = parseInt(
+            document.getElementById("bm25-weight-slider").value,
+          );
           applyWeightsAndRender(bm25Pct);
           document.getElementById("weight-bar").style.display = "flex";
         } else {
@@ -317,7 +333,9 @@
         const indexed = arr.map((r, i) => ({ i, v: fn(r) }));
         indexed.sort((a, b) => b.v - a.v);
         const ranks = new Array(arr.length);
-        indexed.forEach((item, pos) => { ranks[item.i] = pos + 1; });
+        indexed.forEach((item, pos) => {
+          ranks[item.i] = pos + 1;
+        });
         return ranks;
       }
 
@@ -325,7 +343,7 @@
         const r = lastResults[idx];
         if (!r) return;
         document.getElementById("bm25-modal-title").textContent = r.title;
-        const text = r.description || "";
+        const text = r.bm25_text || "";
         const tokens = lastQuery.toLowerCase().match(/\w+/g) || [];
         let html;
         if (tokens.length === 0) {
@@ -447,10 +465,10 @@
             })
             .join("");
         } catch {
-          list.innerHTML = '<div class="commit-loading">Failed to load commits</div>';
+          list.innerHTML =
+            '<div class="commit-loading">Failed to load commits</div>';
         }
       }
-
     </script>
   </body>
 </html>
