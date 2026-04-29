@@ -177,6 +177,8 @@ header .badge {
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-card .info .vendor {
@@ -365,4 +367,302 @@ header .badge {
   .product-card .info .product-title {
     font-size: 11px;
   }
+}
+
+/* Search mode toggle */
+.search-mode-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid #000;
+  border-radius: var(--borderradius-small);
+  overflow: hidden;
+  height: 40px;
+}
+.search-mode-toggle button {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0 14px;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background var(--transition-duration),
+    color var(--transition-duration);
+  font-family: "JetBrains Mono", monospace;
+}
+.search-mode-toggle button.active {
+  background: #000;
+  color: var(--color-base);
+}
+.search-mode-toggle button:not(.active):hover {
+  background: var(--color-black5);
+}
+
+/* Search area */
+.search-area {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
+.search-area.active {
+  display: flex;
+}
+
+/* Upload dropzone */
+.upload-dropzone {
+  border: 2px dashed var(--color-black25);
+  border-radius: var(--borderradius-small);
+  padding: 8px 20px;
+  font-size: 13px;
+  color: var(--color-textinput-placeholder);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-duration),
+    background var(--transition-duration);
+  position: relative;
+  min-width: 240px;
+  text-align: center;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+  border-color: var(--color-textinput-border-focus);
+  background: var(--color-black5);
+}
+.upload-dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Upload preview */
+.upload-preview {
+  display: none;
+  align-items: center;
+  gap: 10px;
+}
+.upload-preview img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--borderradius-small);
+  border: 1px solid var(--color-line);
+}
+.upload-preview .file-name {
+  font-size: 13px;
+  color: var(--color-textinput-placeholder);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.upload-preview .clear-btn {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0 10px;
+  height: 40px;
+  border: 1px solid var(--color-black25);
+  border-radius: var(--borderradius-small);
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-textinput-placeholder);
+}
+.upload-preview .clear-btn:hover {
+  border-color: #000;
+  background: #000;
+  color: var(--color-base);
+}
+
+/* BM25 Modal */
+.bm25-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+.bm25-modal-overlay.open {
+  display: flex;
+}
+.bm25-modal {
+  background: var(--color-base);
+  border-radius: 8px;
+  max-width: 640px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.bm25-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-line);
+}
+.bm25-modal-header h2 {
+  font-size: 15px;
+  font-weight: 500;
+}
+.bm25-modal-header button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-textinput-placeholder);
+  line-height: 1;
+}
+.bm25-modal-header button:hover {
+  color: #000;
+}
+.bm25-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(0, 0, 0, 0.7);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.bm25-modal-body mark {
+  background: rgba(6, 0, 255, 0.15);
+  color: #0600ff;
+  border-radius: 2px;
+  padding: 1px 2px;
+  font-weight: 500;
+}
+.bm25-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-line);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-textinput-placeholder);
+}
+.bm25-modal-footer strong {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* BM25 match button */
+.bm25-match-btn {
+  font-size: 10px;
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-black25);
+  border-radius: var(--borderradius-small);
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-textinput-placeholder);
+  margin-top: 4px;
+  align-self: flex-start;
+}
+.bm25-match-btn:hover {
+  border-color: #0600ff;
+  color: #0600ff;
+}
+
+/* Weight slider bar */
+.weight-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 0 16px;
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+.weight-bar .weight-hint {
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba(0, 0, 0, 0.3);
+  margin-left: 6px;
+}
+.weight-bar label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.weight-bar .weight-value {
+  color: #000;
+  min-width: 28px;
+  text-align: right;
+}
+.weight-bar input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 180px;
+  height: 4px;
+  background: var(--color-black25);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.weight-bar input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #000;
+  cursor: pointer;
+}
+@media (max-width: 480px) {
+  .weight-bar {
+    gap: 6px;
+    padding: 0 0 12px;
+    font-size: 10px;
+  }
+  .weight-bar input[type="range"] {
+    width: 100px;
+  }
+  .weight-bar .weight-hint {
+    width: 100%;
+    margin-left: 0;
+    font-size: 9px;
+  }
+}
+
+/* Commit card */
+#commit-card {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  background: var(--color-base);
+  border: 1px solid var(--color-line);
+  border-radius: var(--borderradius-small);
+  padding: 8px 12px;
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  color: rgba(0, 0, 0, 0.6);
+  max-width: fit-content;
+  width: calc(100% - 32px);
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+#commit-card strong {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 6px;
+  color: rgba(0, 0, 0, 0.35);
 }
