@@ -200,6 +200,71 @@
         border-color: #0600ff;
         color: #0600ff;
       }
+      /* Weight slider bar */
+      .weight-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 0 0 16px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(0, 0, 0, 0.5);
+        white-space: nowrap;
+      }
+      .weight-bar .weight-hint {
+        font-size: 10px;
+        text-transform: none;
+        letter-spacing: 0;
+        color: rgba(0, 0, 0, 0.3);
+        margin-left: 6px;
+      }
+      @media (max-width: 480px) {
+        .weight-bar {
+          gap: 6px;
+          padding: 0 0 12px;
+          font-size: 10px;
+        }
+        .weight-bar input[type="range"] {
+          width: 100px;
+        }
+        .weight-bar .weight-hint {
+          width: 100%;
+          margin-left: 0;
+          font-size: 9px;
+        }
+      }
+      .weight-bar label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .weight-bar .weight-value {
+        color: #000;
+        min-width: 28px;
+        text-align: right;
+      }
+      .weight-bar input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 180px;
+        height: 4px;
+        background: var(--color-black25);
+        border-radius: 2px;
+        outline: none;
+        cursor: pointer;
+      }
+      .weight-bar input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #000;
+        cursor: pointer;
+      }
       #commit-card {
         display: none;
         position: fixed;
@@ -294,6 +359,13 @@
 
     <!-- Results -->
     <div class="results-container">
+      <div class="weight-bar" id="weight-bar" style="display: none">
+        <label>vec <span class="weight-value" id="vec-weight-label">70</span></label>
+        <input type="range" id="bm25-weight-slider" min="0" max="100" value="30"
+          oninput="reweightResults(this.value)" />
+        <label>bm25 <span class="weight-value" id="bm25-weight-label">30</span></label>
+        <span class="weight-hint">Adjust the blend between semantic similarity and keyword matching</span>
+      </div>
       <div id="spinner" class="spinner" style="display: none">
         <div class="spinner-ring"></div>
       </div>
@@ -309,6 +381,7 @@
       let currentMode = "text";
       let selectedFile = null;
       let lastResults = [];
+      let lastRawResults = [];
       let lastQuery = "";
 
       function setMode(mode) {
@@ -403,8 +476,47 @@
         }
 
         spinner.style.display = "none";
-        const threshold = currentMode === "text" ? 0.3 : 0.15;
-        const filtered = data.filter((r) => r.score >= threshold);
+
+        if (currentMode === "text") {
+          lastRawResults = data;
+          lastQuery = document.getElementById("q").value;
+          const bm25Pct = parseInt(document.getElementById("bm25-weight-slider").value);
+          applyWeightsAndRender(bm25Pct);
+          document.getElementById("weight-bar").style.display = "flex";
+        } else {
+          const threshold = 0.15;
+          const filtered = data.filter((r) => r.score >= threshold);
+          if (filtered.length === 0) {
+            document.getElementById("results").innerHTML = "";
+            emptyEl.textContent = "No results found";
+            emptyEl.style.display = "block";
+            document.getElementById("weight-bar").style.display = "none";
+            return;
+          }
+          emptyEl.style.display = "none";
+          lastResults = filtered;
+          lastQuery = "";
+          document.getElementById("weight-bar").style.display = "none";
+          renderResults(filtered, false);
+        }
+      }
+
+      function applyWeightsAndRender(bm25Pct) {
+        const bm25Weight = bm25Pct / 100;
+        const vecWeight = 1 - bm25Weight;
+
+        // Recompute combined scores client-side using the normalized scores from the server
+        const reweighted = lastRawResults.map((r) => ({
+          ...r,
+          score: vecWeight * r.vector_score + bm25Weight * r.bm25_score,
+          vector_weight: vecWeight,
+          bm25_weight: bm25Weight,
+        }));
+        reweighted.sort((a, b) => b.score - a.score);
+
+        const threshold = 0.3;
+        const filtered = reweighted.filter((r) => r.score >= threshold);
+        const emptyEl = document.getElementById("empty");
 
         if (filtered.length === 0) {
           document.getElementById("results").innerHTML = "";
@@ -412,13 +524,19 @@
           emptyEl.style.display = "block";
           return;
         }
-
         emptyEl.style.display = "none";
         lastResults = filtered;
-        lastQuery =
-          currentMode === "text" ? document.getElementById("q").value : "";
+        renderResults(filtered, true);
+      }
 
-        // Compute per-signal ranks (1-based, dense)
+      function reweightResults(bm25Pct) {
+        document.getElementById("bm25-weight-label").textContent = bm25Pct;
+        document.getElementById("vec-weight-label").textContent = 100 - bm25Pct;
+        if (lastRawResults.length === 0) return;
+        applyWeightsAndRender(parseInt(bm25Pct));
+      }
+
+      function renderResults(filtered, isTextMode) {
         const vecRanks = rankBy(filtered, (r) => r.vector_score_raw);
         const bm25Ranks = rankBy(filtered, (r) => r.bm25_score_raw);
 
@@ -437,14 +555,14 @@
                 <span class="brand">${r.title}</span>
                 <span class="vendor">via ${r.vendor}</span>
                 ${
-                  currentMode === "text"
+                  isTextMode
                     ? (() => {
                         const vecContrib = r.vector_weight * r.vector_score;
                         const bm25Contrib = r.bm25_weight * r.bm25_score;
                         const maxBm25Raw = filtered[0].bm25_score_raw || 1;
                         return `
                 <div class="score-breakdown">
-                  <div class="score-final">Combined: ${r.score.toFixed(4)}</div>
+                  <div class="score-final">Normalized Score: ${r.score.toFixed(4)}</div>
                   <div class="score-signals">
                     <div class="signal-card">
                       <div class="signal-header">
@@ -472,7 +590,7 @@
                       })()
                     : `
                 <div class="score-breakdown" style="border:none">
-                  <div class="score-final" style="border:none;margin:0;padding-bottom:0">Score: ${r.score.toFixed(4)}</div>
+                  <div class="score-final" style="border:none;margin:0;padding-bottom:0">Vec Score: ${r.vector_score_raw != null ? r.vector_score_raw.toFixed(4) : r.score.toFixed(4)}</div>
                 </div>`
                 }
               </div>
