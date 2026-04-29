@@ -131,6 +131,7 @@ header .badge {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 24px 32px;
+  padding-bottom: 96px!important;
 }
 
 .results-grid {
