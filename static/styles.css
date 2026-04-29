@@ -94,6 +94,8 @@ header .badge {
   outline: none;
   width: 320px;
   height: 40px;
+  min-width: 0;
+  flex: 1;
 }
 
 .search-form input::placeholder {
@@ -378,6 +380,7 @@ header .badge {
   border-radius: var(--borderradius-small);
   overflow: hidden;
   height: 40px;
+  flex-shrink: 0;
 }
 .search-mode-toggle button {
   font-size: 11px;
@@ -408,6 +411,8 @@ header .badge {
   align-items: center;
   gap: 8px;
   min-height: 40px;
+  min-width: 0;
+  flex: 1;
 }
 .search-area.active {
   display: flex;
@@ -425,7 +430,8 @@ header .badge {
     border-color var(--transition-duration),
     background var(--transition-duration);
   position: relative;
-  min-width: 240px;
+  min-width: 0;
+  flex: 1;
   text-align: center;
   height: 40px;
   display: flex;
@@ -630,9 +636,12 @@ header .badge {
     gap: 6px;
     padding: 0 0 12px;
     font-size: 10px;
+    flex-wrap: wrap;
   }
   .weight-bar input[type="range"] {
-    width: 100px;
+    flex: 1;
+    width: auto;
+    min-width: 0;
   }
   .weight-bar .weight-hint {
     width: 100%;
