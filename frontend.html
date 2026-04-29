@@ -417,10 +417,13 @@
         lastResults = filtered;
         lastQuery =
           currentMode === "text" ? document.getElementById("q").value : "";
+
+        // Compute per-signal ranks (1-based, dense)
+        const vecRanks = rankBy(filtered, (r) => r.vector_score_raw);
+        const bm25Ranks = rankBy(filtered, (r) => r.bm25_score_raw);
+
         document.getElementById("results").innerHTML = filtered
           .map((r, i) => {
-            const vecWeighted = r.vector_weight * r.vector_score;
-            const bm25Weighted = r.bm25_weight * r.bm25_score;
             return `
             <div class="product-card">
               <div class="image-wrapper">
@@ -438,22 +441,31 @@
                     ? (() => {
                         const vecContrib = r.vector_weight * r.vector_score;
                         const bm25Contrib = r.bm25_weight * r.bm25_score;
+                        const maxBm25Raw = filtered[0].bm25_score_raw || 1;
                         return `
                 <div class="score-breakdown">
-                  <div class="score-final">Score: ${r.score.toFixed(4)}</div>
-                  <div class="score-row">
-                    <span class="score-label">vec</span>
-                    <div class="score-bar-track"><div class="score-bar-fill vector" style="width:${(r.vector_score).toFixed(1)*100}%"></div></div>
-                    <span class="score-value">${r.vector_score_raw.toFixed(3)}</span>
-                  </div>
-                  <div class="score-row">
-                    <span class="score-label">bm25</span>
-                    <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${((r.bm25_score_raw / (filtered[0].bm25_score_raw || 1)) * 100).toFixed(1)}%"></div></div>
-                    <span class="score-value">${r.bm25_score_raw.toFixed(1)}</span>
+                  <div class="score-final">Combined: ${r.score.toFixed(4)}</div>
+                  <div class="score-signals">
+                    <div class="signal-card">
+                      <div class="signal-header">
+                        <span class="signal-name">Vector</span>
+                        <span class="signal-rank">#${vecRanks[i]}</span>
+                      </div>
+                      <div class="signal-raw">${r.vector_score_raw.toFixed(4)}</div>
+                      <div class="score-bar-track"><div class="score-bar-fill vector" style="width:${(r.vector_score * 100).toFixed(1)}%"></div></div>
+                    </div>
+                    <div class="signal-card">
+                      <div class="signal-header">
+                        <span class="signal-name">BM25</span>
+                        <span class="signal-rank">#${bm25Ranks[i]}</span>
+                      </div>
+                      <div class="signal-raw">${r.bm25_score_raw.toFixed(4)}</div>
+                      <div class="score-bar-track"><div class="score-bar-fill bm25" style="width:${((r.bm25_score_raw / maxBm25Raw) * 100).toFixed(1)}%"></div></div>
+                    </div>
                   </div>
                   <div class="score-calc">
-                    vec norm(${r.vector_score_raw.toFixed(3)}) = ${r.vector_score.toFixed(2)} × ${r.vector_weight.toFixed(1)} = ${vecContrib.toFixed(4)}<br>
-                    bm25 norm(${r.bm25_score_raw.toFixed(1)}) = ${r.bm25_score.toFixed(2)} × ${r.bm25_weight.toFixed(1)} = ${bm25Contrib.toFixed(4)}<br>
+                    vec: norm(${r.vector_score_raw.toFixed(3)}) → ${r.vector_score.toFixed(2)} × ${r.vector_weight.toFixed(1)}w = ${vecContrib.toFixed(4)}<br>
+                    bm25: norm(${r.bm25_score_raw.toFixed(1)}) → ${r.bm25_score.toFixed(2)} × ${r.bm25_weight.toFixed(1)}w = ${bm25Contrib.toFixed(4)}
                   </div>
                   <button class="bm25-match-btn" data-idx="${i}" onclick="openBm25Modal(this.dataset.idx)">View keyword matches</button>
                 </div>`;
@@ -468,6 +480,14 @@
           `;
           })
           .join("");
+      }
+
+      function rankBy(arr, fn) {
+        const indexed = arr.map((r, i) => ({ i, v: fn(r) }));
+        indexed.sort((a, b) => b.v - a.v);
+        const ranks = new Array(arr.length);
+        indexed.forEach((item, pos) => { ranks[item.i] = pos + 1; });
+        return ranks;
       }
 
       function openBm25Modal(idx) {

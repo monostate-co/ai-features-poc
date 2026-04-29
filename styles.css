@@ -209,26 +209,51 @@ header .badge {
   font-weight: 500;
   color: #000;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--color-line);
   margin-bottom: 2px;
 }
 
-.score-breakdown .score-row {
+.score-breakdown .score-signals {
   display: flex;
-  align-items: center;
   gap: 6px;
 }
 
-.score-breakdown .score-label {
-  width: 52px;
-  flex-shrink: 0;
+.score-breakdown .signal-card {
+  flex: 1;
+  background: var(--color-base);
+  border-radius: 4px;
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.score-breakdown .signal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.score-breakdown .signal-name {
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-size: 9px;
+}
+
+.score-breakdown .signal-rank {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.score-breakdown .signal-raw {
+  font-size: 13px;
+  font-weight: 500;
+  color: #000;
+  letter-spacing: -0.3px;
 }
 
 .score-breakdown .score-bar-track {
-  flex: 1;
-  height: 4px;
+  height: 3px;
   background: var(--color-line);
   border-radius: 2px;
   overflow: hidden;
@@ -248,17 +273,10 @@ header .badge {
   background: #000;
 }
 
-.score-breakdown .score-value {
-  width: 36px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
 .score-breakdown .score-calc {
   font-size: 9px;
   color: rgba(0, 0, 0, 0.3);
   padding-top: 3px;
-  border-top: 1px solid var(--color-line);
   margin-top: 2px;
   line-height: 1.5;
 }
