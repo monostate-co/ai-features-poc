@@ -268,6 +268,8 @@
       }
       #commit-card {
         display: none;
+        flex-direction: column;
+        gap: 4px;
         position: fixed;
         bottom: 16px;
         left: 16px;
@@ -280,9 +282,6 @@
         color: rgba(0, 0, 0, 0.6);
         max-width: fit-content;
         width: calc(100% - 32px);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
         z-index: 50;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
@@ -672,11 +671,19 @@
           if (!res.ok) return;
           const [commit] = await res.json();
           const msg = commit.commit.message.split("\n")[0];
-          const date = new Date(commit.commit.author.date);
-          const ago = timeAgo(date);
+
+          // Extract total commit count from Link header pagination
+          let totalCommits = null;
+          const link = res.headers.get("Link");
+          if (link) {
+            const match = link.match(/&page=(\d+)>;\s*rel="last"/);
+            if (match) totalCommits = parseInt(match[1]);
+          }
+
+          const commitCount = totalCommits ? `<span style="color:rgba(0,0,0,0.35)">${totalCommits} commits</span>` : "";
           document.getElementById("commit-card").innerHTML =
-            `<strong>latest commit</strong> ${escapeHtml(msg)}`;
-          document.getElementById("commit-card").style.display = "block";
+            `<strong>latest commit</strong><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(msg)}</span>${commitCount}`;
+          document.getElementById("commit-card").style.display = "flex";
         } catch {}
       })();
 
