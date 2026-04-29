@@ -376,6 +376,9 @@
       });
 
       // Fetch latest commit from GitHub
+      let allCommits = null;
+      let commitsExpanded = false;
+
       (async function fetchLatestCommit() {
         try {
           const res = await fetch(
@@ -393,12 +396,61 @@
             if (match) totalCommits = parseInt(match[1]);
           }
 
-          const commitCount = totalCommits ? `<span style="color:rgba(0,0,0,0.35)">${totalCommits} commits</span>` : "";
-          document.getElementById("commit-card").innerHTML =
-            `<strong>latest commit</strong><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(msg)}</span>${commitCount}`;
-          document.getElementById("commit-card").style.display = "flex";
+          const card = document.getElementById("commit-card");
+          card.innerHTML = `
+            <div class="commit-list" id="commit-list"></div>
+            <div class="commit-summary">
+              <strong>latest commit</strong>
+              <span class="commit-msg">${escapeHtml(msg)}</span>
+              ${totalCommits ? `<span class="commit-count">${totalCommits} commits</span>` : ""}
+              <button class="commit-expand" onclick="toggleCommitList()" aria-label="Show all commits"></button>
+            </div>
+          `;
+          card.style.display = "flex";
         } catch {}
       })();
+
+      async function toggleCommitList() {
+        const card = document.getElementById("commit-card");
+        const list = document.getElementById("commit-list");
+        commitsExpanded = !commitsExpanded;
+        card.classList.toggle("open", commitsExpanded);
+        if (commitsExpanded && allCommits === null) {
+          list.innerHTML = '<div class="commit-loading">Loading…</div>';
+          await loadAllCommits();
+        }
+      }
+
+      async function loadAllCommits() {
+        const list = document.getElementById("commit-list");
+        try {
+          const all = [];
+          const perPage = 100;
+          for (let page = 1; page <= 10; page++) {
+            const res = await fetch(
+              `https://api.github.com/repos/monostate-co/ai-features-poc/commits?sha=main&per_page=${perPage}&page=${page}`,
+            );
+            if (!res.ok) break;
+            const batch = await res.json();
+            all.push(...batch);
+            if (batch.length < perPage) break;
+          }
+          allCommits = all;
+          list.innerHTML = all
+            .map((c) => {
+              const m = c.commit.message.split("\n")[0];
+              const date = new Date(c.commit.author.date).getTime();
+              const sha = c.sha.substring(0, 7);
+              return `<a class="commit-item" href="${c.html_url}" target="_blank" rel="noopener">
+                <span class="msg">${escapeHtml(m)}</span>
+                <span class="meta">${sha} · ${timeAgo(date)}</span>
+              </a>`;
+            })
+            .join("");
+        } catch {
+          list.innerHTML = '<div class="commit-loading">Failed to load commits</div>';
+        }
+      }
 
       function timeAgo(date) {
         const s = Math.floor((Date.now() - date) / 1000);
