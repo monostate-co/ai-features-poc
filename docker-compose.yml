@@ -12,7 +12,6 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./data:/app/data
       - app_models:/app/models
       - app_product_images:/app/product_images
     depends_on:
