@@ -6,17 +6,8 @@ from io import BytesIO
 
 from scripts.index_text import sync as sync_text
 from scripts.index_images import sync as sync_images
-
-# Sync Qdrant before binding the search modules — search.py / search_images.py
-# instantiate Qdrant clients at import time, but we want collections to exist
-# and reflect the latest source data before they're queried.
-print("Starting Qdrant sync...")
-sync_text()
-sync_images()
-print("Qdrant sync complete.")
-
-from search import search  # noqa: E402
-from search_images import search_by_image  # noqa: E402
+from search import search
+from search_images import search_by_image
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
@@ -42,4 +33,10 @@ def api_search_by_image():
     return jsonify(results)
 
 if __name__ == "__main__":
+    # Sync inside the __main__ guard so a forkserver/spawn worker re-importing
+    # this module to bootstrap doesn't re-enter sync() mid-spawn.
+    print("Starting Qdrant sync...")
+    sync_text()
+    sync_images()
+    print("Qdrant sync complete.")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

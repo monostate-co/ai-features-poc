@@ -141,7 +141,9 @@ def sync() -> None:
 
         print(f"Encoding sparse vectors with {SPARSE_MODEL}...")
         sparse_model = SparseTextEmbedding(model_name=SPARSE_MODEL)
-        sparse_vecs = list(sparse_model.embed(bm25_texts, parallel=1, batch_size=64))
+        # parallel=None encodes inline; parallel>=1 spawns a forkserver worker
+        # that re-imports app.py and re-enters sync() during bootstrap.
+        sparse_vecs = list(sparse_model.embed(bm25_texts, parallel=None, batch_size=64))
 
         points = []
         for pid, p, h, dense, sparse in zip(
