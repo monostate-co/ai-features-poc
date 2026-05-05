@@ -16,13 +16,14 @@ COLLECTION_NAME = "products_text"
 EMBEDDING_MODEL = "text-embedding-3-small"
 SPARSE_MODEL = "Qdrant/bm25"
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY") or None
 
 # Pull a wider candidate set from each branch than we ultimately return,
 # so the merged top-k reflects items that score well on either signal.
 CANDIDATE_LIMIT = 100
 
 openai_client = OpenAI()
-qdrant = QdrantClient(url=QDRANT_URL)
+qdrant = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
 sparse_model = SparseTextEmbedding(model_name=SPARSE_MODEL)
 
 

@@ -13,6 +13,7 @@ COLLECTION_NAME = "products_images"
 MODEL_NAME = "clip-ViT-B-32"
 MODEL_PATH = os.path.join("models", MODEL_NAME)
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY") or None
 
 
 def _load_model() -> SentenceTransformer:
@@ -25,7 +26,7 @@ def _load_model() -> SentenceTransformer:
 
 
 model = _load_model()
-qdrant = QdrantClient(url=QDRANT_URL)
+qdrant = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
 
 
 def search_by_image(image, top_k: int = 10):

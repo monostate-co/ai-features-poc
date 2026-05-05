@@ -3,8 +3,20 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from PIL import Image
 from io import BytesIO
-from search import search
-from search_images import search_by_image
+
+from scripts.index_text import sync as sync_text
+from scripts.index_images import sync as sync_images
+
+# Sync Qdrant before binding the search modules — search.py / search_images.py
+# instantiate Qdrant clients at import time, but we want collections to exist
+# and reflect the latest source data before they're queried.
+print("Starting Qdrant sync...")
+sync_text()
+sync_images()
+print("Qdrant sync complete.")
+
+from search import search  # noqa: E402
+from search_images import search_by_image  # noqa: E402
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
