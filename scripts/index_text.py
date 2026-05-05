@@ -20,7 +20,7 @@ from fastembed import SparseTextEmbedding
 from openai import OpenAI
 from qdrant_client import QdrantClient, models
 
-PRODUCTS_PATH = "data/products.json"
+PRODUCTS_PATH = "data/products_images.json"
 COLLECTION_NAME = "products_text"
 EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIM = 1536
