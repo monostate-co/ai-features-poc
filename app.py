@@ -7,7 +7,7 @@ from io import BytesIO
 
 from scripts.index_text import sync as sync_text
 from scripts.index_images import sync as sync_images
-from search import search
+from search_text import search
 from search_images import search_by_image
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
