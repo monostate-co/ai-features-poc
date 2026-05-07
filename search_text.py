@@ -12,6 +12,8 @@ from fastembed import SparseTextEmbedding
 from openai import OpenAI
 from qdrant_client import QdrantClient, models
 
+from scripts.extract_facets import extract as extract_facets
+
 COLLECTION_NAME = "products_text"
 EMBEDDING_MODEL = "text-embedding-3-small"
 SPARSE_MODEL = "Qdrant/bm25"
@@ -40,11 +42,42 @@ def sparse_query(text: str) -> models.SparseVector:
     )
 
 
+def _build_filter(facets: dict[str, list[str]]) -> models.Filter | None:
+    must: list = []
+    for field in ("vendor", "color", "type"):
+        values = facets.get(field)
+        if values:
+            must.append(
+                models.FieldCondition(key=field, match=models.MatchAny(any=values))
+            )
+    # Category is a path string ("Apparel & Accessories > ... > Vests"), so we
+    # OR substring matches across whichever segments the extractor found.
+    segments = facets.get("category") or []
+    if segments:
+        must.append(
+            models.Filter(
+                should=[
+                    models.FieldCondition(
+                        key="category", match=models.MatchText(text=seg)
+                    )
+                    for seg in segments
+                ]
+            )
+        )
+    return models.Filter(must=must) if must else None
+
+
 def search(query: str, top_k: int = 5, bm25_weight: float = 0.3):
+    facets = extract_facets(query)
+    qfilter = _build_filter(facets)
+    if facets:
+        print(f"[search] q={query!r} facets={facets}", flush=True)
+
     dense_hits = qdrant.query_points(
         collection_name=COLLECTION_NAME,
         query=embed_query(query),
         using="dense",
+        query_filter=qfilter,
         limit=CANDIDATE_LIMIT,
         with_payload=True,
     ).points
@@ -53,6 +86,7 @@ def search(query: str, top_k: int = 5, bm25_weight: float = 0.3):
         collection_name=COLLECTION_NAME,
         query=sparse_query(query),
         using="bm25",
+        query_filter=qfilter,
         limit=CANDIDATE_LIMIT,
         with_payload=True,
     ).points

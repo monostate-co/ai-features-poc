@@ -58,22 +58,34 @@ def _content_hash(p: dict) -> str:
 
 
 def _ensure_collection(qdrant: QdrantClient) -> None:
-    if qdrant.collection_exists(COLLECTION_NAME):
-        return
-    print(f"Creating collection '{COLLECTION_NAME}'...")
-    qdrant.create_collection(
+    if not qdrant.collection_exists(COLLECTION_NAME):
+        print(f"Creating collection '{COLLECTION_NAME}'...")
+        qdrant.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config={
+                "dense": models.VectorParams(
+                    size=EMBEDDING_DIM,
+                    distance=models.Distance.COSINE,
+                )
+            },
+            sparse_vectors_config={
+                "bm25": models.SparseVectorParams(
+                    modifier=models.Modifier.IDF,
+                )
+            },
+        )
+
+    # Idempotent: re-running with the same schema is a no-op on the server.
+    for field in ("vendor", "color", "type"):
+        qdrant.create_payload_index(
+            collection_name=COLLECTION_NAME,
+            field_name=field,
+            field_schema=models.PayloadSchemaType.KEYWORD,
+        )
+    qdrant.create_payload_index(
         collection_name=COLLECTION_NAME,
-        vectors_config={
-            "dense": models.VectorParams(
-                size=EMBEDDING_DIM,
-                distance=models.Distance.COSINE,
-            )
-        },
-        sparse_vectors_config={
-            "bm25": models.SparseVectorParams(
-                modifier=models.Modifier.IDF,
-            )
-        },
+        field_name="category",
+        field_schema=models.PayloadSchemaType.TEXT,
     )
 
 
