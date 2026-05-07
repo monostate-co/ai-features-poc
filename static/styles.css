@@ -583,6 +583,71 @@ header .badge {
   color: #0600ff;
 }
 
+/* Facet bar */
+.facet-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 0 12px;
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(0, 0, 0, 0.5);
+}
+.facet-bar-label {
+  white-space: nowrap;
+}
+.facet-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.facet-hint {
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba(0, 0, 0, 0.3);
+}
+.facet-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-black25);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  color: rgba(0, 0, 0, 0.4);
+  text-transform: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.facet-chip .facet-field {
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: inherit;
+  opacity: 0.7;
+}
+.facet-chip .facet-value {
+  color: inherit;
+}
+.facet-chip:hover {
+  border-color: #000;
+  color: #000;
+}
+.facet-chip.active {
+  background: #000;
+  border-color: #000;
+  color: var(--color-base);
+}
+.facet-chip.active .facet-field {
+  opacity: 0.6;
+}
+
 /* Weight slider bar */
 .weight-bar {
   display: flex;

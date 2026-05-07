@@ -72,6 +72,11 @@
 
     <!-- Results -->
     <div class="results-container">
+      <div class="facet-bar" id="facet-bar" style="display: none">
+        <span class="facet-bar-label">filters</span>
+        <div class="facet-chips" id="facet-chips"></div>
+        <span class="facet-hint">click to toggle each filter</span>
+      </div>
       <div class="weight-bar" id="weight-bar" style="display: none">
         <label
           >vec <span class="weight-value" id="vec-weight-label">70</span></label
@@ -110,6 +115,8 @@
       let lastResults = [];
       let lastRawResults = [];
       let lastQuery = "";
+      let extractedFacets = {};
+      let activeFacets = {};
 
       function setMode(mode) {
         currentMode = mode;
@@ -167,6 +174,12 @@
 
       async function doSearch(e) {
         e.preventDefault();
+        // Form submit: re-extract facets server-side by clearing local state.
+        activeFacets = {};
+        await runTextOrImageSearch({ useActiveFacets: false });
+      }
+
+      async function runTextOrImageSearch({ useActiveFacets }) {
         const emptyEl = document.getElementById("empty");
         const spinner = document.getElementById("spinner");
 
@@ -178,7 +191,11 @@
         try {
           if (currentMode === "text") {
             const q = document.getElementById("q").value;
-            const res = await fetch(`/search?q=${encodeURIComponent(q)}`);
+            const params = new URLSearchParams({ q });
+            if (useActiveFacets) {
+              params.set("facets", JSON.stringify(activeFacets));
+            }
+            const res = await fetch(`/search?${params.toString()}`);
             data = await res.json();
           } else {
             if (!selectedFile) {
@@ -205,8 +222,11 @@
         spinner.style.display = "none";
 
         if (currentMode === "text") {
-          lastRawResults = data;
+          lastRawResults = data.results || [];
           lastQuery = document.getElementById("q").value;
+          extractedFacets = data.extracted_facets || {};
+          activeFacets = data.active_facets || {};
+          renderFacetChips();
           const bm25Pct = parseInt(
             document.getElementById("bm25-weight-slider").value,
           );
@@ -214,7 +234,12 @@
           document.getElementById("weight-bar").style.display = "flex";
         } else {
           const threshold = 0.15;
-          const filtered = data.filter((r) => r.score >= threshold);
+          const filtered = (Array.isArray(data) ? data : []).filter(
+            (r) => r.score >= threshold,
+          );
+          extractedFacets = {};
+          activeFacets = {};
+          renderFacetChips();
           if (filtered.length === 0) {
             document.getElementById("results").innerHTML = "";
             emptyEl.textContent = "No results found";
@@ -228,6 +253,47 @@
           document.getElementById("weight-bar").style.display = "none";
           renderResults(filtered, false);
         }
+      }
+
+      function renderFacetChips() {
+        const bar = document.getElementById("facet-bar");
+        const container = document.getElementById("facet-chips");
+        const fields = Object.keys(extractedFacets);
+        if (fields.length === 0) {
+          bar.style.display = "none";
+          container.innerHTML = "";
+          return;
+        }
+        const chips = [];
+        for (const field of fields) {
+          for (const value of extractedFacets[field]) {
+            const isActive = (activeFacets[field] || []).includes(value);
+            chips.push(
+              `<button type="button" class="facet-chip${isActive ? " active" : ""}"
+                 data-field="${escapeHtml(field)}"
+                 data-value="${escapeHtml(value)}"
+                 onclick="toggleFacet(this.dataset.field, this.dataset.value)">
+                <span class="facet-field">${escapeHtml(field)}</span>
+                <span class="facet-value">${escapeHtml(value)}</span>
+              </button>`,
+            );
+          }
+        }
+        container.innerHTML = chips.join("");
+        bar.style.display = "flex";
+      }
+
+      function toggleFacet(field, value) {
+        const current = activeFacets[field] || [];
+        if (current.includes(value)) {
+          const next = current.filter((v) => v !== value);
+          if (next.length === 0) delete activeFacets[field];
+          else activeFacets[field] = next;
+        } else {
+          activeFacets[field] = [...current, value];
+        }
+        renderFacetChips();
+        runTextOrImageSearch({ useActiveFacets: true });
       }
 
       function applyWeightsAndRender(bm25Pct) {

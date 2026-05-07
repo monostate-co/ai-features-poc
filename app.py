@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 from flask import Flask, request, jsonify, send_file
@@ -20,8 +21,10 @@ def index():
 @app.route("/search")
 def api_search():
     q = request.args.get("q", "")
-    results = search(q, top_k=24)
-    return jsonify(results)
+    facets_param = request.args.get("facets")
+    active_facets = json.loads(facets_param) if facets_param else None
+    response = search(q, top_k=24, active_facets=active_facets)
+    return jsonify(response)
 
 @app.route("/search-by-image", methods=["POST"])
 def api_search_by_image():

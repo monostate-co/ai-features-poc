@@ -67,11 +67,17 @@ def _build_filter(facets: dict[str, list[str]]) -> models.Filter | None:
     return models.Filter(must=must) if must else None
 
 
-def search(query: str, top_k: int = 5, bm25_weight: float = 0.3):
-    facets = extract_facets(query)
-    qfilter = _build_filter(facets)
-    if facets:
-        print(f"[search] q={query!r} facets={facets}", flush=True)
+def search(
+    query: str,
+    top_k: int = 5,
+    bm25_weight: float = 0.3,
+    active_facets: dict[str, list[str]] | None = None,
+):
+    extracted = extract_facets(query)
+    applied = extracted if active_facets is None else active_facets
+    qfilter = _build_filter(applied)
+    if applied:
+        print(f"[search] q={query!r} facets={applied}", flush=True)
 
     dense_hits = qdrant.query_points(
         collection_name=COLLECTION_NAME,
@@ -163,7 +169,11 @@ def search(query: str, top_k: int = 5, bm25_weight: float = 0.3):
                 ),
             }
         )
-    return results
+    return {
+        "results": results,
+        "extracted_facets": extracted,
+        "active_facets": applied,
+    }
 
 
 if __name__ == "__main__":
@@ -171,5 +181,5 @@ if __name__ == "__main__":
         q = input("\nSearch: ")
         if q.lower() in ("quit", "exit"):
             break
-        for r in search(q):
+        for r in search(q)["results"]:
             print(f"  {r['score']:.3f}  {r['vendor']} — {r['title']}")
